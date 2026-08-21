@@ -63,7 +63,9 @@ export const accounts = {
 
 export const transfers = {
   transfer: (data: TransferMoneyRequest) =>
-    client.post('/api/v1/transfers', data),
+    client.post('/api/v1/transfers', data, {
+      headers: { 'X-Idempotency-Key': crypto.randomUUID() },
+    }),
 };
 
 export const approvals = {

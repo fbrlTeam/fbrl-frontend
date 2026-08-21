@@ -134,3 +134,11 @@ export function useAuditVerify() {
     mutationFn: () => audit.verify(),
   });
 }
+
+export function useAuditVerifyStatus() {
+  return useQuery({
+    queryKey: ['auditVerifyStatus'],
+    queryFn: () => audit.verify(),
+    staleTime: 60_000,
+  });
+}

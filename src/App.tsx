@@ -13,6 +13,7 @@ import EodSettlementPage from './pages/EodSettlement/EodSettlementPage';
 import ReconciliationPage from './pages/Reconciliation/ReconciliationPage';
 import BatchJobsPage from './pages/BatchJobs/BatchJobsPage';
 import AuditLogPage from './pages/AuditLog/AuditLogPage';
+import ReliabilityPage from './pages/Reliability/ReliabilityPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -48,6 +49,7 @@ export default function App() {
               <Route path="/reconciliation" element={<ReconciliationPage />} />
               <Route path="/batch-jobs" element={<BatchJobsPage />} />
               <Route path="/audit-log" element={<AuditLogPage />} />
+              <Route path="/reliability" element={<ReliabilityPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

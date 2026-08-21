@@ -1,3 +1,4 @@
+export type AdminRole = 'ADMIN' | 'DEMO';
 export type ApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 export type ExecutionStatus = 'NOT_APPLICABLE' | 'EXECUTED' | 'FAILED';
 export type ReconciliationStatus = 'MISMATCH' | 'NO_SNAPSHOT';
@@ -24,6 +25,7 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string;
+  role: AdminRole;
 }
 
 export interface AccountResponse {
@@ -77,6 +79,7 @@ export interface TransferApprovalDetailResponse {
   status: ApprovalStatus;
   rejectionReason: string | null;
   executionStatus: ExecutionStatus;
+  executionFailureReason: string | null;
   requestedAt: string;
   decidedAt: string | null;
 }
@@ -120,6 +123,10 @@ export interface OutboxEventResponse {
   aggregateId: string;
   eventType: string;
   createdAt: string;
+  previousHash: string;
+  entryHash: string;
+  traceId: string | null;
+  spanId: string | null;
 }
 
 export interface AuditChainVerificationResponse {

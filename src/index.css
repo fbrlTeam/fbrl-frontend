@@ -1,7 +1,34 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo',
+    'Malgun Gothic', sans-serif;
+
+  /* 브랜드 — 기관용 네이비 */
+  --color-navy-50: #eef3fa;
+  --color-navy-100: #d9e5f4;
+  --color-navy-200: #b3c9e8;
+  --color-navy-300: #7fa4d6;
+  --color-navy-500: #1b5fcc;
+  --color-navy-600: #16509f;
+  --color-navy-700: #123f7d;
+  --color-navy-800: #0e3563;
+  --color-navy-900: #0b2e5b;
+  --color-navy-950: #071f3f;
+
+  /* 중립 — 차가운 코퍼레이트 그레이 */
+  --color-ink-900: #0f172a;
+  --color-ink-800: #1e293b;
+  --color-ink-700: #334155;
+  --color-ink-600: #475569;
+  --color-ink-500: #64748b;
+  --color-ink-400: #94a3b8;
+  --color-ink-300: #cbd5e1;
+  --color-ink-200: #e2e8f0;
+
+  --color-line: #e3e8ef;
+  --color-line-soft: #eef1f6;
+  --color-canvas: #f4f6f9;
 }
 
 @layer base {
@@ -12,13 +39,142 @@
 
   body {
     font-family: var(--font-sans);
-    color: #191f28;
-    background-color: #f9fafb;
+    color: var(--color-ink-900);
+    background-color: var(--color-canvas);
+  }
+
+  /* 금액·수량은 자릿수 정렬 */
+  table td,
+  table th,
+  .tnum {
+    font-variant-numeric: tabular-nums;
   }
 
   input[type="date"]::-webkit-calendar-picker-indicator {
-    opacity: 0.5;
+    opacity: 0.45;
     cursor: pointer;
+  }
+}
+
+@layer components {
+  /* 카드 — 그림자 대신 헤어라인 */
+  .panel {
+    background-color: #fff;
+    border: 1px solid var(--color-line);
+    border-radius: 8px;
+  }
+
+  .panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid var(--color-line-soft);
+  }
+
+  .panel-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-ink-900);
+    letter-spacing: -0.01em;
+  }
+
+  /* 라벨 — 표·정의목록의 항목명 */
+  .field-label {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--color-ink-500);
+  }
+
+  .mono {
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 입력 요소 */
+  .field {
+    width: 100%;
+    height: 2.375rem;
+    padding: 0 0.75rem;
+    font-size: 0.8125rem;
+    color: var(--color-ink-900);
+    background-color: #fff;
+    border: 1px solid var(--color-ink-300);
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 150ms, box-shadow 150ms;
+  }
+  .field::placeholder {
+    color: var(--color-ink-400);
+  }
+  .field:focus {
+    border-color: var(--color-navy-500);
+    box-shadow: 0 0 0 3px rgb(27 95 204 / 0.12);
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    height: 2.375rem;
+    padding: 0 1rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #fff;
+    background-color: var(--color-navy-900);
+    border-radius: 6px;
+    transition: background-color 150ms;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background-color: var(--color-navy-800);
+  }
+  .btn-primary:disabled {
+    opacity: 0.45;
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    height: 2.375rem;
+    padding: 0 1rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-ink-700);
+    background-color: #fff;
+    border: 1px solid var(--color-ink-300);
+    border-radius: 6px;
+    transition: background-color 150ms;
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background-color: var(--color-canvas);
+  }
+  .btn-secondary:disabled {
+    opacity: 0.45;
+  }
+
+  /* 세그먼트 토글 */
+  .segmented {
+    display: inline-flex;
+    padding: 2px;
+    background-color: var(--color-ink-200);
+    border-radius: 6px;
+  }
+  .segmented button {
+    padding: 0.3125rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-ink-600);
+    border-radius: 4px;
+    transition: all 150ms;
+  }
+  .segmented button[data-active='true'] {
+    background-color: #fff;
+    color: var(--color-navy-900);
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
   }
 }
 
@@ -28,10 +184,10 @@
 }
 
 @keyframes zoom-in-95 {
-  from { transform: scale(0.95); opacity: 0; }
+  from { transform: scale(0.97); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
 
 .animate-in {
-  animation: fade-in 200ms ease-out, zoom-in-95 200ms ease-out;
+  animation: fade-in 160ms ease-out, zoom-in-95 160ms ease-out;
 }

@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Eye, EyeOff, AlertCircle, Lock } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLogin } from '../../hooks/queries';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -17,7 +19,11 @@ export default function LoginPage() {
 
     try {
       const result = await loginMutation.mutateAsync({ username, password });
-      login(result.token);
+      if (result.role !== 'ADMIN') {
+        setError('관리자 권한이 없는 계정입니다. 운영 콘솔은 ADMIN 계정만 접근할 수 있습니다.');
+        return;
+      }
+      login(result.token, result.role);
       navigate('/');
     } catch {
       setError('아이디 또는 비밀번호가 올바르지 않습니다.');
@@ -25,128 +31,150 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-[#0a0a0a] items-center justify-center">
-        <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-blue-600/20 blur-[120px] animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-indigo-500/15 blur-[100px] animate-pulse [animation-delay:1s]" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-purple-500/10 blur-[80px] animate-pulse [animation-delay:2s]" />
-        </div>
-
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
-          backgroundSize: '40px 40px',
-        }} />
-
-        <div className="relative z-10 px-16 max-w-lg">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
-              <span className="text-white font-bold text-sm">F</span>
-            </div>
-            <span className="text-white/90 text-lg font-semibold tracking-tight">FBRL</span>
+    <div className="min-h-screen flex flex-col bg-canvas">
+      {/* 기관 상단바 */}
+      <header className="h-[52px] bg-navy-900 flex items-center px-5 shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-[26px] h-[26px] rounded bg-white/10 border border-white/20 flex items-center justify-center">
+            <span className="text-[11px] font-bold text-white tracking-tight">F</span>
           </div>
-
-          <h2 className="text-[40px] leading-tight font-bold text-white tracking-tight mb-4">
-            금융 백엔드<br />
-            <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-              신뢰성 실험실
+          <div className="flex items-baseline gap-2.5">
+            <span className="text-[15px] font-semibold text-white tracking-tight">FBRL</span>
+            <span className="w-px h-3 bg-white/20" />
+            <span className="text-[12px] text-white/55 tracking-tight">
+              Transaction Reliability Console
             </span>
-          </h2>
-
-          <p className="text-white/40 text-[15px] leading-relaxed">
-            분산 트랜잭션, Saga 오케스트레이션, CDC 기반 이벤트 발행,
-            해시체인 감사로그까지 — 금융 시스템의 신뢰성 패턴을
-            직접 검증하는 플랫폼입니다.
-          </p>
-
-          <div className="mt-12 flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-lg shadow-emerald-400/50" />
-              <span className="text-white/30 text-xs">시스템 정상</span>
-            </div>
-            <div className="h-3 w-px bg-white/10" />
-            <span className="text-white/20 text-xs">v1.0.0</span>
           </div>
         </div>
+      </header>
 
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-      </div>
-
-      <div className="flex-1 flex items-center justify-center bg-white px-6">
-        <div className="w-full max-w-[360px]">
-          <div className="lg:hidden flex items-center gap-3 mb-10">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">F</span>
+      <div className="flex-1 flex items-center justify-center px-4 py-10">
+        <div className="w-full max-w-[880px] grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] bg-white border border-line rounded-lg overflow-hidden">
+          {/* 좌: 시스템 설명 */}
+          <div className="hidden lg:flex flex-col justify-between p-9 bg-navy-950 relative overflow-hidden">
+            <div
+              className="absolute inset-0 opacity-[0.06]"
+              style={{
+                backgroundImage:
+                  'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
+                backgroundSize: '28px 28px',
+              }}
+            />
+            <div className="relative">
+              <p className="text-[11px] font-semibold text-navy-300 tracking-wider uppercase">
+                Financial Backend Reliability Lab
+              </p>
+              <h2 className="text-[26px] leading-snug font-bold text-white tracking-tight mt-3">
+                금융 거래의 신뢰성을
+                <br />
+                검증하는 운영 콘솔
+              </h2>
+              <p className="text-[13px] text-white/45 leading-relaxed mt-4">
+                분산 동시성 제어, 복식부기 원장, 해시체인 감사로그, EOD 정산·대사까지 —
+                금융 백엔드에 요구되는 신뢰성 패턴을 실제 데이터로 확인합니다.
+              </p>
             </div>
-            <span className="text-gray-900 text-lg font-semibold tracking-tight">FBRL</span>
+
+            <div className="relative mt-10 pt-6 border-t border-white/10 grid grid-cols-3 gap-4">
+              {[
+                { k: '분산 동시성', v: 'Redisson' },
+                { k: '감사 무결성', v: 'SHA-256 체인' },
+                { k: '정산 배치', v: 'Spring Batch' },
+              ].map((it) => (
+                <div key={it.k}>
+                  <p className="text-[10px] text-white/35">{it.k}</p>
+                  <p className="text-[12px] text-white/80 font-medium mt-0.5">{it.v}</p>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="mb-8">
-            <h1 className="text-[26px] font-bold text-gray-900 tracking-tight">
-              로그인
-            </h1>
-            <p className="text-[14px] text-gray-400 mt-2 leading-relaxed">
-              관리자 계정으로 로그인하세요
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <div className="space-y-1.5">
-              <label className="block text-[13px] font-medium text-gray-600 pl-0.5">아이디</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="아이디를 입력하세요"
-                required
-                autoFocus
-                className="w-full h-[52px] px-4 bg-gray-50 rounded-[14px] text-[15px] text-gray-900 placeholder:text-gray-300 outline-none border-[1.5px] border-transparent focus:border-blue-500 focus:bg-white focus:shadow-[0_0_0_3px_rgba(59,130,246,0.08)] transition-all duration-200"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="block text-[13px] font-medium text-gray-600 pl-0.5">비밀번호</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="비밀번호를 입력하세요"
-                required
-                className="w-full h-[52px] px-4 bg-gray-50 rounded-[14px] text-[15px] text-gray-900 placeholder:text-gray-300 outline-none border-[1.5px] border-transparent focus:border-blue-500 focus:bg-white focus:shadow-[0_0_0_3px_rgba(59,130,246,0.08)] transition-all duration-200"
-              />
+          {/* 우: 인증 */}
+          <div className="p-9 flex flex-col justify-center">
+            <div className="mb-7">
+              <h1 className="text-[20px] font-bold text-ink-900 tracking-tight">관리자 로그인</h1>
+              <p className="text-[12.5px] text-ink-500 mt-1.5">
+                발급받은 운영 계정으로 접속하세요
+              </p>
             </div>
 
-            {error && (
-              <div className="flex items-center gap-2 px-3 py-2.5 bg-red-50 rounded-xl">
-                <div className="w-1 h-1 rounded-full bg-red-400 shrink-0" />
-                <p className="text-[13px] text-red-500">{error}</p>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="field-label block">아이디</label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="아이디를 입력하세요"
+                  required
+                  autoFocus
+                  autoComplete="username"
+                  className="field"
+                />
               </div>
-            )}
 
-            <div className="pt-2">
+              <div className="space-y-1.5">
+                <label className="field-label block">비밀번호</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="비밀번호를 입력하세요"
+                    required
+                    autoComplete="current-password"
+                    className="field pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    tabIndex={-1}
+                    aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600 transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              {error && (
+                <div className="flex items-start gap-2 px-3 py-2.5 bg-red-50 border border-red-100 rounded-md">
+                  <AlertCircle size={14} className="text-red-500 shrink-0 mt-px" />
+                  <p className="text-[12px] text-red-700 leading-relaxed">{error}</p>
+                </div>
+              )}
+
               <button
                 type="submit"
                 disabled={loginMutation.isPending}
-                className="w-full h-[52px] bg-gray-900 hover:bg-gray-800 active:scale-[0.98] text-white text-[15px] font-semibold rounded-[14px] transition-all duration-200 disabled:opacity-40 disabled:active:scale-100 shadow-sm hover:shadow-md"
+                className="btn-primary w-full h-[42px] mt-1"
               >
                 {loginMutation.isPending ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span className="text-white/70">로그인 중...</span>
-                  </div>
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    인증 중
+                  </>
                 ) : (
                   '로그인'
                 )}
               </button>
-            </div>
-          </form>
+            </form>
 
-          <div className="mt-10 pt-6 border-t border-gray-100">
-            <p className="text-[12px] text-gray-300 text-center">
-              Financial Backend Reliability Lab © 2026
-            </p>
+            <div className="mt-7 pt-4 border-t border-line-soft flex items-center gap-1.5">
+              <Lock size={11} className="text-ink-400" />
+              <p className="text-[11px] text-ink-400">
+                모든 접근은 감사 로그에 기록됩니다
+              </p>
+            </div>
           </div>
         </div>
       </div>
+
+      <footer className="py-4 text-center shrink-0">
+        <p className="text-[11px] text-ink-400">
+          Financial Backend Reliability Lab © 2026
+        </p>
+      </footer>
     </div>
   );
 }
