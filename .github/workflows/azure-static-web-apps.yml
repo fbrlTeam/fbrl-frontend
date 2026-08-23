@@ -1,0 +1,44 @@
+name: Azure Static Web Apps CI/CD
+
+# main에 push되면 프로덕션으로 배포하고, PR이 열리면 프리뷰 환경을 만든다.
+# 빌드/배포 자체는 Azure의 공식 액션(Azure/static-web-apps-deploy@v1)에 맡긴다 —
+# 이 액션이 내부적으로 app_build_command를 실행해 output_location을 업로드한다.
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+
+jobs:
+  build_and_deploy_job:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    runs-on: ubuntu-latest
+    name: Build and Deploy Job
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Build and Deploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }} # PR에 프리뷰 URL 코멘트를 남기기 위함
+          action: "upload"
+          app_location: "/" # 프로젝트 루트 (package.json 위치)
+          output_location: "dist" # vite build 결과물 디렉토리 (vite.config.ts 기본값)
+          app_build_command: "npm run build"
+
+  close_pull_request_job:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request Job
+    steps:
+      - name: Close Pull Request
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: "close"
