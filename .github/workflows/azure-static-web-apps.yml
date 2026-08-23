@@ -24,6 +24,10 @@ jobs:
 
       - name: Build and Deploy
         uses: Azure/static-web-apps-deploy@v1
+        env:
+          # app_build_command(npm run build)가 이 액션 내부에서 실행될 때 Vite가
+          # import.meta.env.VITE_API_BASE_URL로 읽어갈 수 있도록 빌드 시점에 주입한다.
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }} # PR에 프리뷰 URL 코멘트를 남기기 위함
