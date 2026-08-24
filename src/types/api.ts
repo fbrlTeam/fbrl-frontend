@@ -129,6 +129,16 @@ export interface OutboxEventResponse {
   spanId: string | null;
 }
 
+export interface DemoResetStatusResponse {
+  lastResetAt: string | null;
+  nextResetAt: string | null;
+}
+
+export interface DemoBatchTriggerResponse {
+  jobExecutionId: number;
+  status: string;
+}
+
 export interface AuditChainVerificationResponse {
   valid: boolean;
   totalEntries: number;
