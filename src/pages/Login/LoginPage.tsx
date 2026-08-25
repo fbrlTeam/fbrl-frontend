@@ -19,12 +19,8 @@ export default function LoginPage() {
 
     try {
       const result = await loginMutation.mutateAsync({ username, password });
-      if (result.role !== 'ADMIN') {
-        setError('관리자 권한이 없는 계정입니다. 운영 콘솔은 ADMIN 계정만 접근할 수 있습니다.');
-        return;
-      }
       login(result.token, result.role);
-      navigate('/');
+      navigate(result.role === 'ADMIN' ? '/' : '/demo');
     } catch {
       setError('아이디 또는 비밀번호가 올바르지 않습니다.');
     }
@@ -92,9 +88,9 @@ export default function LoginPage() {
           {/* 우: 인증 */}
           <div className="p-9 flex flex-col justify-center">
             <div className="mb-7">
-              <h1 className="text-[20px] font-bold text-ink-900 tracking-tight">관리자 로그인</h1>
+              <h1 className="text-[20px] font-bold text-ink-900 tracking-tight">로그인</h1>
               <p className="text-[12.5px] text-ink-500 mt-1.5">
-                발급받은 운영 계정으로 접속하세요
+                운영 콘솔(ADMIN) 또는 데모 랩(DEMO) 계정으로 접속하세요
               </p>
             </div>
 

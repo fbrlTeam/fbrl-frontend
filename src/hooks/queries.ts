@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { accounts, approvals, eodSnapshots, reconciliation, batchJobs, audit, transfers, auth } from '../api/endpoints';
+import { accounts, approvals, eodSnapshots, reconciliation, batchJobs, audit, transfers, auth, demo } from '../api/endpoints';
 import type { LoginRequest, TransferMoneyRequest, RequestTransferApprovalRequest, RejectTransferRequest, ApprovalStatus, ReconciliationStatus } from '../types/api';
 
 export function useLogin() {
@@ -142,3 +142,163 @@ export function useAuditVerifyStatus() {
     staleTime: 60_000,
   });
 }
+
+/* ── 데모 랩 ─────────────────────────────────────────── */
+
+export function useDemoResetStatus() {
+  return useQuery({
+    queryKey: ['demoResetStatus'],
+    queryFn: () => demo.getResetStatus(),
+    refetchInterval: 30_000,
+  });
+}
+
+export function useCreateDemoAccount() {
+  return useMutation({
+    mutationFn: () => demo.createAccount(),
+  });
+}
+
+export function useDemoAccount(accountNumber: string) {
+  return useQuery({
+    queryKey: ['demoAccount', accountNumber],
+    queryFn: () => demo.getAccount(accountNumber),
+    enabled: !!accountNumber,
+  });
+}
+
+export function useDemoLedgerEntries(accountNumber: string, from: string, to: string, page = 0, size = 20) {
+  return useQuery({
+    queryKey: ['demoLedgerEntries', accountNumber, from, to, page, size],
+    queryFn: () => demo.getLedgerEntries(accountNumber, from, to, page, size),
+    enabled: !!accountNumber && !!from && !!to,
+  });
+}
+
+export function useDemoTransfer() {
+  return useMutation({
+    mutationFn: (data: TransferMoneyRequest) => demo.transfer(data),
+  });
+}
+
+export function useDemoPendingApprovals() {
+  return useQuery({
+    queryKey: ['demoPendingApprovals'],
+    queryFn: () => demo.getPendingApprovals(),
+  });
+}
+
+export function useDemoSearchApprovals(from: string, to: string, status?: ApprovalStatus, page = 0, size = 20) {
+  return useQuery({
+    queryKey: ['demoApprovals', from, to, status, page, size],
+    queryFn: () => demo.searchApprovals(from, to, status, page, size),
+    enabled: !!from && !!to,
+  });
+}
+
+export function useRequestDemoApproval() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: RequestTransferApprovalRequest) => demo.requestApproval(data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['demoPendingApprovals'] }),
+  });
+}
+
+export function useDemoApprovalDetail(requestId: string) {
+  return useQuery({
+    queryKey: ['demoApproval', requestId],
+    queryFn: () => demo.getApproval(requestId),
+    enabled: !!requestId,
+  });
+}
+
+export function useApproveDemoTransfer() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (requestId: string) => demo.approve(requestId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['demoPendingApprovals'] });
+      qc.invalidateQueries({ queryKey: ['demoApprovals'] });
+    },
+  });
+}
+
+export function useRejectDemoTransfer() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ requestId, data }: { requestId: string; data: RejectTransferRequest }) =>
+      demo.reject(requestId, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['demoPendingApprovals'] });
+      qc.invalidateQueries({ queryKey: ['demoApprovals'] });
+    },
+  });
+}
+
+export function useDemoAuditVerify() {
+  return useMutation({
+    mutationFn: () => demo.verifyAuditChain(),
+  });
+}
+
+export function useDemoAuditVerifyStatus() {
+  return useQuery({
+    queryKey: ['demoAuditVerifyStatus'],
+    queryFn: () => demo.verifyAuditChain(),
+    staleTime: 60_000,
+  });
+}
+
+export function useDemoAuditEvents(page = 0, size = 20) {
+  return useQuery({
+    queryKey: ['demoAuditEvents', page, size],
+    queryFn: () => demo.getAuditEvents(page, size),
+  });
+}
+
+export function useDemoBatchJobExecutions(jobName: string, page = 0, size = 20) {
+  return useQuery({
+    queryKey: ['demoBatchJobs', jobName, page, size],
+    queryFn: () => demo.getBatchJobExecutions(jobName, page, size),
+    enabled: !!jobName,
+  });
+}
+
+export function useTriggerDemoEod() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => demo.triggerEodSettlement(),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['demoBatchJobs'] }),
+  });
+}
+
+export function useTriggerDemoReconciliation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => demo.triggerReconciliation(),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['demoBatchJobs'] }),
+  });
+}
+
+export function useDemoEodSnapshotsByDate(date: string, page = 0, size = 20) {
+  return useQuery({
+    queryKey: ['demoEodSnapshots', date, page, size],
+    queryFn: () => demo.getEodSnapshotsByDate(date, page, size),
+    enabled: !!date,
+  });
+}
+
+export function useDemoReconciliationDiscrepancies(
+  from: string,
+  to: string,
+  status?: ReconciliationStatus,
+  page = 0,
+  size = 20
+) {
+  return useQuery({
+    queryKey: ['demoReconciliation', from, to, status, page, size],
+    queryFn: () => demo.getReconciliationDiscrepancies(from, to, status, page, size),
+    enabled: !!from && !!to,
+  });
+}
+

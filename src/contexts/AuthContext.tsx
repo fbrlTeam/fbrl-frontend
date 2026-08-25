@@ -63,7 +63,7 @@ export function useAuth() {
 }
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
-  const { isAuthenticated, role, logout } = useAuth();
+  const { isAuthenticated, role } = useAuth();
   const navigate = useNavigate();
   const isAdmin = isAuthenticated && role === 'ADMIN';
 
@@ -72,13 +72,34 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
       navigate('/login', { replace: true });
       return;
     }
-    if (role !== 'ADMIN') {
-      logout();
-      navigate('/login', { replace: true });
+    if (role === 'DEMO') {
+      navigate('/demo', { replace: true });
     }
-  }, [isAuthenticated, role, logout, navigate]);
+  }, [isAuthenticated, role, navigate]);
 
   if (!isAdmin) {
+    return null;
+  }
+
+  return <>{children}</>;
+}
+
+export function DemoRoute({ children }: { children: ReactNode }) {
+  const { isAuthenticated, role } = useAuth();
+  const navigate = useNavigate();
+  const isDemo = isAuthenticated && role === 'DEMO';
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login', { replace: true });
+      return;
+    }
+    if (role === 'ADMIN') {
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, role, navigate]);
+
+  if (!isDemo) {
     return null;
   }
 
